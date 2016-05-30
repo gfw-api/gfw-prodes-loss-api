@@ -1,0 +1,11 @@
+{
+    "logger": {
+        "name": "gfw-prodes-loss-api-STAGING",
+        "level": "debug",
+        "toFile": false,
+        "dirLogFile": null
+    },
+    "service": {
+        "port": null
+    }
+}
