@@ -7,7 +7,7 @@
     },
     "service": {
         "id": "gfw-prodes-loss-api_1.0.0",
-        "name": "GFW Quicc Alerts API",
+        "name": "GFW Prodes Loss API",
         "port": 3600
     },
     "cartoDB":{

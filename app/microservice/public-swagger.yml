@@ -1,7 +1,7 @@
 swagger: '2.0'
 info:
-  title: GFW Terrai Alerts API
-  description: Global Forest Watch - Terrai Alerts API
+  title: GFW Prodes Loss API
+  description: Global Forest Watch - Prodes Loss API
   version: "1.0.0"
 host: example.vizzuality.com
 
@@ -13,7 +13,7 @@ produces:
   - application/vnd.api+json
 
 paths:
-  /quicc-alerts:
+  /prodes-loss:
     get:
       operationId: world
       produces:
@@ -49,7 +49,7 @@ paths:
           schema:
             $ref: '#/definitions/Errors'
 
-  /quicc-alerts/use/{name}/{id}:
+  /prodes-loss/use/{name}/{id}:
     get:
       operationId: use
       produces:
@@ -90,7 +90,7 @@ paths:
           schema:
             $ref: '#/definitions/Errors'
 
-  /quicc-alerts/wdpa/{id}:
+  /prodes-loss/wdpa/{id}:
     get:
       operationId: wdpa
       produces:
@@ -127,7 +127,7 @@ paths:
           schema:
             $ref: '#/definitions/Errors'
 
-  /quicc-alerts/admin/{iso}:
+  /prodes-loss/admin/{iso}:
     get:
       description: a
       operationId: getNational
@@ -165,7 +165,7 @@ paths:
           schema:
             $ref: '#/definitions/Errors'
 
-  /quicc-alerts/admin/{iso}/{id1}:
+  /prodes-loss/admin/{iso}/{id1}:
     get:
       description: a
       operationId: getSubnational
