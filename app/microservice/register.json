@@ -2,39 +2,39 @@
     "id": "#(service.id)",
     "name": "#(service.name)",
     "urls": [{
-        "url": "/quicc-alerts/admin/:iso",
+        "url": "/prodes-loss/admin/:iso",
         "method": "GET",
         "endpoints": [{
             "method": "GET",
-            "path": "/api/v1/quicc-alerts/admin/:iso"
+            "path": "/api/v1/prodes-loss/admin/:iso"
         }]
     }, {
-        "url": "/quicc-alerts/admin/:iso/:id1",
+        "url": "/prodes-loss/admin/:iso/:id1",
         "method": "GET",
         "endpoints": [{
             "method": "GET",
-            "path": "/api/v1/quicc-alerts/admin/:iso/:id1"
+            "path": "/api/v1/prodes-loss/admin/:iso/:id1"
         }]
     }, {
-        "url": "/quicc-alerts/use/:name/:id",
+        "url": "/prodes-loss/use/:name/:id",
         "method": "GET",
         "endpoints": [{
             "method": "GET",
-            "path": "/api/v1/quicc-alerts/use/:name/:id"
+            "path": "/api/v1/prodes-loss/use/:name/:id"
         }]
     }, {
-        "url": "/quicc-alerts/wdpa/:id",
+        "url": "/prodes-loss/wdpa/:id",
         "method": "GET",
         "endpoints": [{
             "method": "GET",
-            "path": "/api/v1/quicc-alerts/wdpa/:id"
+            "path": "/api/v1/prodes-loss/wdpa/:id"
         }]
     }, {
-        "url": "/quicc-alerts",
+        "url": "/prodes-loss",
         "method": "GET",
         "endpoints": [{
             "method": "GET",
-            "path": "/api/v1/quicc-alerts"
+            "path": "/api/v1/prodes-loss"
         }]
     }]
 }

@@ -8,10 +8,10 @@ var NotFound = require('errors/notFound');
 var JSONAPIDeserializer = require('jsonapi-serializer').Deserializer;
 
 const WORLD = `SELECT round(sum(f.areameters)/10000) AS value
-            {additionalSelect}
+            {{additionalSelect}}
         FROM prodes_wgs84 f
-        WHERE to_date(f.ano, 'YYYY') >= '{{begin}}::date'
-              AND to_date(f.ano, 'YYYY') < '{{end}}::date'
+        WHERE to_date(f.ano, 'YYYY') >= '{{begin}}'::date
+              AND to_date(f.ano, 'YYYY') < '{{end}}'::date
               AND ST_INTERSECTS(
                 ST_SetSRID(
                   ST_GeomFromGeoJSON('{{{geojson}}}'), 4326), f.the_geom)`;
@@ -21,10 +21,10 @@ const ISO = `with s as (
             FROM gadm2_provinces_simple
             WHERE iso = UPPER('{{iso}}'))
         SELECT round(sum(f.areameters)/10000) AS value
-            {additionalSelect}
+            {{additionalSelect}}
         FROM prodes_wgs84 f, s
-        WHERE  to_date(f.ano, 'YYYY') >= '{{begin}}::date'
-        AND to_date(f.ano, 'YYYY') < '{{end}}::date'
+        WHERE  to_date(f.ano, 'YYYY') >= '{{begin}}'::date
+        AND to_date(f.ano, 'YYYY') < '{{end}}'::date
         AND st_intersects(f.the_geom, s.the_geom) `;
 
 const ID1 = ` with s as (
@@ -32,22 +32,22 @@ const ID1 = ` with s as (
             FROM gadm2_provinces_simple
             WHERE iso = UPPER('{{iso}}') AND id_1 = {{id1}})
         SELECT round(sum(f.areameters)/10000) AS value
-        	{additionalSelect}
+        	{{additionalSelect}}
         FROM prodes_wgs84 f, s
-        WHERE  to_date(f.ano, 'YYYY') >= '{{begin}}::date'
-        AND to_date(f.ano, 'YYYY') < '{{end}}::date'
+        WHERE  to_date(f.ano, 'YYYY') >= '{{begin}}'::date
+        AND to_date(f.ano, 'YYYY') < '{{end}}'::date
         AND st_intersects(f.the_geom, s.the_geom) `;
 
 const USE = `SELECT round(sum(f.areameters)/10000) AS value
-            {additionalSelect}
-        FROM {use_table} u, prodes_wgs84 f
+            {{additionalSelect}}
+        FROM {{useTable}} u, prodes_wgs84 f
         WHERE u.cartodb_id = {{pid}}
               AND ST_Intersects(f.the_geom, u.the_geom)
               AND to_date(f.ano, 'YYYY') >= '{{begin}}'::date
               AND to_date(f.ano, 'YYYY') < '{{end}}'::date `;
 
 const WDPA = `SELECT round(sum(f.areameters)/10000) AS value
-            {additionalSelect}
+            {{additionalSelect}}
         FROM prodes_wgs84 f, (SELECT CASE when marine::numeric = 2 then null
         when ST_NPoints(the_geom)<=18000 THEN the_geom
        WHEN ST_NPoints(the_geom) BETWEEN 18000 AND 50000 THEN ST_RemoveRepeatedPoints(the_geom, 0.001)
@@ -57,7 +57,6 @@ const WDPA = `SELECT round(sum(f.areameters)/10000) AS value
               and to_date(f.ano, 'YYYY') >= '{{begin}}'::date
               AND to_date(f.ano, 'YYYY') < '{{end}}'::date `;
 
-const MIN_MAX_DATE_SQL = ', MIN(date) as min_date, MAX(date) as max_date ';
 
 var executeThunk = function(client, sql, params) {
     return function(callback) {
@@ -108,8 +107,7 @@ class CartoDBService {
             let formats = ['csv', 'geojson', 'kml', 'shp', 'svg'];
             let download = {};
             let queryFinal = Mustache.render(query, params);
-            queryFinal = queryFinal.replace(MIN_MAX_DATE_SQL, '');
-            queryFinal = queryFinal.replace('SELECT COUNT(pt.*) AS value', 'SELECT pt.*');
+            queryFinal = queryFinal.replace('SELECT round(sum(f.areameters)/10000) AS value', 'SELECT f.*');
             queryFinal = encodeURIComponent(queryFinal);
             for(let i=0, length = formats.length; i < length; i++){
                 download[formats[i]] = this.apiUrl + '?q=' + queryFinal + '&format=' + formats[i];
@@ -144,9 +142,7 @@ class CartoDBService {
             begin: periods[0],
             end: periods[1]
         };
-        if(alertQuery){
-            params.additionalSelect = MIN_MAX_DATE_SQL;
-        }
+
         let data = yield executeThunk(this.client, ISO, params);
         if (data.rows && data.rows.length > 0) {
             let result = data.rows[0];
@@ -166,9 +162,7 @@ class CartoDBService {
             begin: periods[0],
             end: periods[1]
         };
-        if(alertQuery){
-            params.additionalSelect = MIN_MAX_DATE_SQL;
-        }
+
         let data = yield executeThunk(this.client, ID1, params);
         if (data.rows && data.rows.length > 0) {
             let result = data.rows[0];
@@ -188,9 +182,7 @@ class CartoDBService {
             begin: periods[0],
             end: periods[1]
         };
-        if(alertQuery){
-            params.additionalSelect = MIN_MAX_DATE_SQL;
-        }
+
         let data = yield executeThunk(this.client, USE, params);
 
         if (data.rows && data.rows.length > 0) {
@@ -210,9 +202,7 @@ class CartoDBService {
             begin: periods[0],
             end: periods[1]
         };
-        if(alertQuery){
-            params.additionalSelect = MIN_MAX_DATE_SQL;
-        }
+
         let data = yield executeThunk(this.client, WDPA, params);
         if (data.rows && data.rows.length > 0) {
             let result = data.rows[0];
@@ -250,9 +240,7 @@ class CartoDBService {
                 begin: periods[0],
                 end: periods[1]
             };
-            if(alertQuery){
-                params.additionalSelect = MIN_MAX_DATE_SQL;
-            }
+
             let data = yield executeThunk(this.client, WORLD, params);
             if (data.rows && data.rows.length > 0) {
                 let result = data.rows[0];
