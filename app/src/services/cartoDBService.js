@@ -57,6 +57,11 @@ const WDPA = `SELECT round(sum(f.areameters)/10000) AS value
               and to_date(f.ano, 'YYYY') >= '{{begin}}'::date
               AND to_date(f.ano, 'YYYY') < '{{end}}'::date `;
 
+const LATEST = `SELECT DISTINCT ano
+        FROM prodes_wgs84
+        WHERE ano IS NOT NULL
+        ORDER BY ano DESC
+        LIMIT {{limit}}`;
 
 var executeThunk = function(client, sql, params) {
     return function(callback) {
@@ -251,6 +256,20 @@ class CartoDBService {
             return null;
         }
         throw new NotFound('Geostore not found');
+    }
+
+    * latest(limit=3) {
+        logger.debug('Obtaining latest with limit %s', limit);
+        let params = {
+            limit: limit
+        };
+        let data = yield executeThunk(this.client, LATEST, params);
+        
+        if (data.rows ) {
+            let result = data.rows;
+            return result;
+        }
+        return null;
     }
 
 }

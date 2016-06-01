@@ -36,5 +36,12 @@
             "method": "GET",
             "path": "/api/v1/prodes-loss"
         }]
+    }, {
+        "url": "/prodes-loss/latest",
+        "method": "GET",
+        "endpoints": [{
+            "method": "GET",
+            "path": "/api/v1/prodes-loss/latest"
+        }]
     }]
 }

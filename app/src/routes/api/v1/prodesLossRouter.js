@@ -61,18 +61,23 @@ class ProdesLossRouter {
     static * world() {
         logger.info('Obtaining world data');
         this.assert(this.query.geostore, 400, 'GeoJSON param required');
-        try{
+        try {
             let data = yield CartoDBService.getWorld(this.query.geostore, this.query.alertQuery, this.query.period);
 
             this.body = ProdesLossSerializer.serialize(data);
-        } catch(err){
-            if(err instanceof NotFound){
+        } catch (err) {
+            if (err instanceof NotFound) {
                 this.throw(404, 'Geostore not found');
                 return;
             }
             throw err;
         }
 
+    }
+    static * latest() {
+        logger.info('Obtaining latest data');
+        let data = yield CartoDBService.latest(this.query.limit);
+        this.body = ProdesLossSerializer.serializeLatest(data);
     }
 
 }
@@ -91,6 +96,7 @@ router.get('/admin/:iso/:id1', isCached, ProdesLossRouter.getSubnational);
 router.get('/use/:name/:id', isCached, ProdesLossRouter.use);
 router.get('/wdpa/:id', isCached, ProdesLossRouter.wdpa);
 router.get('/', isCached, ProdesLossRouter.world);
+router.get('/latest', isCached, ProdesLossRouter.latest);
 
 
 module.exports = router;

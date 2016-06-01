@@ -22,7 +22,7 @@ paths:
       produces:
         - application/vnd.api+json
       tags:
-        - QUICC
+        - PRODES
       parameters:
         - name: geostore
           in: query
@@ -38,7 +38,7 @@ paths:
         200:
           description: Results obtained
           schema:
-            $ref: '#/definitions/QUICCALERTSAPI'
+            $ref: '#/definitions/PRODESALERTSAPI'
         404:
           description: Geostore not found
           schema:
@@ -58,7 +58,7 @@ paths:
       produces:
         - application/vnd.api+json
       tags:
-        - QUICC
+        - PRODES
       parameters:
         - name: name
           in: path
@@ -79,7 +79,7 @@ paths:
         200:
           description: Results obtained
           schema:
-            $ref: '#/definitions/QUICCALERTSAPI'
+            $ref: '#/definitions/PRODESALERTSAPI'
         404:
           description: Geostore not found
           schema:
@@ -99,7 +99,7 @@ paths:
       produces:
         - application/vnd.api+json
       tags:
-        - QUICC
+        - PRODES
       parameters:
         - name: id
           in: path
@@ -116,7 +116,7 @@ paths:
         200:
           description: Results obtained
           schema:
-            $ref: '#/definitions/QUICCALERTSAPI'
+            $ref: '#/definitions/PRODESALERTSAPI'
         404:
           description: Geostore not found
           schema:
@@ -137,7 +137,7 @@ paths:
       produces:
         - application/vnd.api+json
       tags:
-        - QUICC
+        - PRODES
       parameters:
         - name: iso
           in: path
@@ -154,7 +154,7 @@ paths:
         200:
           description: Results obtained
           schema:
-            $ref: '#/definitions/QUICCALERTSAPI'
+            $ref: '#/definitions/PRODESALERTSAPI'
         404:
           description: Geostore not found
           schema:
@@ -175,7 +175,7 @@ paths:
       produces:
         - application/vnd.api+json
       tags:
-        - QUICC
+        - PRODES
       parameters:
         - name: iso
           in: path
@@ -196,7 +196,7 @@ paths:
         200:
           description: Results obtained
           schema:
-            $ref: '#/definitions/QUICCALERTSAPI'
+            $ref: '#/definitions/PRODESALERTSAPI'
         404:
           description: Geostore not found
           schema:
@@ -210,6 +210,35 @@ paths:
           schema:
             $ref: '#/definitions/Errors'
 
+  /prodes-loss/latest:
+    get:
+      operationId: getLatest
+      produces:
+        - application/vnd.api+json
+      tags:
+        - PRODES
+      parameters:
+        - name: limit
+          in: query
+          description: Limit. Default 3
+          type: integer
+      responses:
+        200:
+          description: Results obtained
+          schema:
+            $ref: '#/definitions/PRODESLATESTAPI'
+        404:
+          description: Geostore not found
+          schema:
+            $ref: '#/definitions/Errors'
+        500:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Errors'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Errors'
 
 definitions:
   Errors:
@@ -260,16 +289,14 @@ definitions:
       meta:
         type: object
         description: A meta object containing non-standard meta-information about the error.
-
-  QUICCALERTSAPI:
+  PRODESLATESTAPI:
     type: object
     properties:
       data:
         properties:
           $schema:
-            $ref: '#/definitions/QUICCALERTSBody'
-
-  QUICCALERTSBody:
+            $ref: '#/definitions/PRODESLATESTBody'
+  PRODESLATESTBody:
     type: object
     properties:
       type:
@@ -281,9 +308,37 @@ definitions:
       attributes:
         properties:
           schema:
-            $ref: '#/definitions/QUICCALERTSModel'
+            $ref: '#/definitions/PRODESLATESTModel'
 
-  QUICCALERTSModel:
+  PRODESLATESTModel:
+    type: object
+    properties:
+      date:
+        type: string
+        format: date
+  PRODESALERTSAPI:
+    type: object
+    properties:
+      data:
+        properties:
+          $schema:
+            $ref: '#/definitions/PRODESALERTSBody'
+
+  PRODESALERTSBody:
+    type: object
+    properties:
+      type:
+        type: string
+        description: Resource type
+      id:
+        type: string
+        description: Resource id
+      attributes:
+        properties:
+          schema:
+            $ref: '#/definitions/PRODESALERTSModel'
+
+  PRODESALERTSModel:
     type: object
     properties:
       value:
