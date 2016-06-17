@@ -294,7 +294,7 @@ definitions:
     properties:
       data:
         properties:
-          $schema:
+          schema:
             $ref: '#/definitions/PRODESLATESTBody'
   PRODESLATESTBody:
     type: object
@@ -321,7 +321,7 @@ definitions:
     properties:
       data:
         properties:
-          $schema:
+          schema:
             $ref: '#/definitions/PRODESALERTSBody'
 
   PRODESALERTSBody:
