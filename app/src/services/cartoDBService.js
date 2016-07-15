@@ -41,7 +41,7 @@ const ID1 = ` with s as (SELECT st_simplify(the_geom, 0.0001) as the_geom, area_
 
 const USE = `SELECT round(sum(f.areameters)/10000) AS value, area_ha
               {{additionalSelect}}
-                FROM gfw_logging u left join prodes_wgs84 f
+                FROM {{useTable}} u left join prodes_wgs84 f
                 on ST_Intersects(f.the_geom, u.the_geom)
                 AND to_date(f.ano, 'YYYY') >= '{{begin}}'::date
                 AND to_date(f.ano, 'YYYY') < '{{end}}'::date
