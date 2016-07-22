@@ -344,15 +344,12 @@ definitions:
       value:
         type: number
         format: float
-      min-date:
-        type: string
-        format: date-time
-      max-date:
-        type: string
-        format: date-time
+      areaHa:
+        type: number
+        format: float
       period:
         type: string
-      download-urls:
+      downloadUrls:
         type: object
         properties:
           csv:

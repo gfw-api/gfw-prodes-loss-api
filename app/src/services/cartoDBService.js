@@ -16,46 +16,53 @@ const WORLD = `SELECT round(sum(f.areameters)/10000) AS value
                 ST_SetSRID(
                   ST_GeomFromGeoJSON('{{{geojson}}}'), 4326), f.the_geom)`;
 
-const ISO = `with s as (
-            SELECT st_simplify(the_geom, 0.0001) as the_geom
-            FROM gadm2_provinces_simple
+const ISO = `with s as (SELECT st_simplify(the_geom, 0.0001) as the_geom, area_ha
+            FROM gadm2_countries_simple
             WHERE iso = UPPER('{{iso}}'))
-        SELECT round(sum(f.areameters)/10000) AS value
-            {{additionalSelect}}
-        FROM prodes_wgs84 f, s
-        WHERE  to_date(f.ano, 'YYYY') >= '{{begin}}'::date
-        AND to_date(f.ano, 'YYYY') < '{{end}}'::date
-        AND st_intersects(f.the_geom, s.the_geom) `;
 
-const ID1 = ` with s as (
-            SELECT st_simplify(the_geom, 0.0001) as the_geom
+            SELECT round(sum(f.areameters)/10000) AS value, area_ha
+            {{additionalSelect}}
+            FROM prodes_wgs84 f right join s
+            on st_intersects(f.the_geom, s.the_geom)
+              AND to_date(f.ano, 'YYYY') >= '{{begin}}'::date
+              AND to_date(f.ano, 'YYYY') < '{{end}}'::date
+            group by area_ha `;
+
+const ID1 = ` with s as (SELECT st_simplify(the_geom, 0.0001) as the_geom, area_ha
             FROM gadm2_provinces_simple
             WHERE iso = UPPER('{{iso}}') AND id_1 = {{id1}})
-        SELECT round(sum(f.areameters)/10000) AS value
-        	{{additionalSelect}}
-        FROM prodes_wgs84 f, s
-        WHERE  to_date(f.ano, 'YYYY') >= '{{begin}}'::date
-        AND to_date(f.ano, 'YYYY') < '{{end}}'::date
-        AND st_intersects(f.the_geom, s.the_geom) `;
+        SELECT round(sum(f.areameters)/10000) AS value, area_ha
+          {{additionalSelect}}
+        FROM prodes_wgs84 f right join s
 
-const USE = `SELECT round(sum(f.areameters)/10000) AS value
-            {{additionalSelect}}
-        FROM {{useTable}} u, prodes_wgs84 f
-        WHERE u.cartodb_id = {{pid}}
-              AND ST_Intersects(f.the_geom, u.the_geom)
-              AND to_date(f.ano, 'YYYY') >= '{{begin}}'::date
-              AND to_date(f.ano, 'YYYY') < '{{end}}'::date `;
+     on st_intersects(f.the_geom, s.the_geom) group by area_ha
+     AND to_date(f.ano, 'YYYY') >= '{{begin}}'::date
+     AND to_date(f.ano, 'YYYY') < '{{end}}'::date `;
 
-const WDPA = `SELECT round(sum(f.areameters)/10000) AS value
+const USE = `SELECT round(sum(f.areameters)/10000) AS value, area_ha
+              {{additionalSelect}}
+                FROM {{useTable}} u left join prodes_wgs84 f
+                on ST_Intersects(f.the_geom, u.the_geom)
+                AND to_date(f.ano, 'YYYY') >= '{{begin}}'::date
+                AND to_date(f.ano, 'YYYY') < '{{end}}'::date
+                WHERE u.cartodb_id = {{pid}}
+                group by area_ha`;
+
+const WDPA = `with p as (SELECT
+           CASE WHEN marine::numeric = 2
+                   THEN null
+                WHEN ST_NPoints(the_geom)<=18000
+                   THEN the_geom
+                WHEN ST_NPoints(the_geom) BETWEEN 18000 AND 50000 THEN ST_RemoveRepeatedPoints(the_geom, 0.001)
+                ELSE ST_RemoveRepeatedPoints(the_geom, 0.005)
+                END as the_geom, gis_area*100 as area_ha FROM wdpa_protected_areas where wdpaid={{wdpaid}})
+            SELECT round(sum(f.areameters)/10000) AS value, area_ha
             {{additionalSelect}}
-        FROM prodes_wgs84 f, (SELECT CASE when marine::numeric = 2 then null
-        when ST_NPoints(the_geom)<=18000 THEN the_geom
-       WHEN ST_NPoints(the_geom) BETWEEN 18000 AND 50000 THEN ST_RemoveRepeatedPoints(the_geom, 0.001)
-      ELSE ST_RemoveRepeatedPoints(the_geom, 0.005)
-       END as the_geom FROM wdpa_protected_areas where wdpaid={{wdpaid}}) AS p
-        WHERE ST_Intersects(f.the_geom, p.the_geom)
-              and to_date(f.ano, 'YYYY') >= '{{begin}}'::date
-              AND to_date(f.ano, 'YYYY') < '{{end}}'::date `;
+            FROM prodes_wgs84 f right join p
+            on ST_Intersects(f.the_geom, p.the_geom)
+            AND to_date(f.ano, 'YYYY') >= '{{begin}}'::date
+            AND to_date(f.ano, 'YYYY') < '{{end}}'::date
+            group by area_ha `;
 
 const LATEST = `SELECT DISTINCT ano
         FROM prodes_wgs84
@@ -76,7 +83,7 @@ var executeThunk = function(client, sql, params) {
 
 var deserializer = function(obj) {
     return function(callback) {
-        new JSONAPIDeserializer().deserialize(obj, callback);
+        new JSONAPIDeserializer({keyForAttribute: 'camelCase'}).deserialize(obj, callback);
     };
 };
 
@@ -113,6 +120,7 @@ class CartoDBService {
             let download = {};
             let queryFinal = Mustache.render(query, params);
             queryFinal = queryFinal.replace('SELECT round(sum(f.areameters)/10000) AS value', 'SELECT f.*');
+            queryFinal = queryFinal.replace('group by area_ha', '');
             queryFinal = encodeURIComponent(queryFinal);
             for(let i=0, length = formats.length; i < length; i++){
                 download[formats[i]] = this.apiUrl + '?q=' + queryFinal + '&format=' + formats[i];
@@ -251,6 +259,7 @@ class CartoDBService {
                 let result = data.rows[0];
                 result.period = this.getPeriodText(period);
                 result.downloadUrls = this.getDownloadUrls(WORLD, params);
+                result.area_ha = geostore.areaHa;
                 return result;
             }
             return null;
@@ -264,7 +273,7 @@ class CartoDBService {
             limit: limit
         };
         let data = yield executeThunk(this.client, LATEST, params);
-        
+
         if (data.rows ) {
             let result = data.rows;
             return result;
