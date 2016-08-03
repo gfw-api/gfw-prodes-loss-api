@@ -1,10 +1,10 @@
-# GFW Fires API
+# GFW Prodes Loss API
 
 
 This repository is the microservice that it implement the prodes loss funcionality and exposed the /prodes-loss endpoints in the api-gateway
 
 [View the documentation for this
-API](http://gfw-api.github.io/swagger-ui/?url=https://raw.githubusercontent.com/gfw-api/gfw-prodes-loss-api/master/app/microservice/swagger.yml#/PRODES-LOSS)
+API](http://gfw-api.github.io/swagger-ui/?url=https://raw.githubusercontent.com/gfw-api/gfw-prodes-loss-api/master/app/microservice/swagger.yml#/PRODES)
 
 ## First time user
 Perform the following steps:
