@@ -1,7 +1,19 @@
 swagger: '2.0'
 info:
   title: GFW Prodes Loss API
-  description: Global Forest Watch - Prodes Loss API
+  description: |
+    ## Global Forest Watch - Prodes Loss API
+
+    Identifies annual deforestation in the Brazilian Amazon.
+
+    | Property | Value |
+    | --- | --- | --- |
+    | Coverage | Brazilian Amazon |
+    | Resolution |30 x 30 meters (Landsat with CBERS, Resourcesat, and UK2-DMC) |
+    | Source | INPE |
+    | Timescale | 2000–2015 |
+    | Units | Hectares |
+    | Updates | Annual |
   version: "1.0.0"
 host: example.vizzuality.com
 
