@@ -8,7 +8,6 @@ var NotFound = require('errors/notFound');
 var JSONAPIDeserializer = require('jsonapi-serializer').Deserializer;
 
 const WORLD = `SELECT round(sum(f.areameters)/10000) AS value
-            {{additionalSelect}}
         FROM prodes_wgs84 f
         WHERE to_date(f.ano, 'YYYY') >= '{{begin}}'::date
               AND to_date(f.ano, 'YYYY') < '{{end}}'::date
@@ -21,7 +20,6 @@ const ISO = `with s as (SELECT st_simplify(the_geom, 0.0001) as the_geom, area_h
             WHERE iso = UPPER('{{iso}}'))
 
             SELECT round(sum(f.areameters)/10000) AS value, area_ha
-            {{additionalSelect}}
             FROM prodes_wgs84 f right join s
             on st_intersects(f.the_geom, s.the_geom)
               AND to_date(f.ano, 'YYYY') >= '{{begin}}'::date
@@ -31,16 +29,15 @@ const ISO = `with s as (SELECT st_simplify(the_geom, 0.0001) as the_geom, area_h
 const ID1 = ` with s as (SELECT st_simplify(the_geom, 0.0001) as the_geom, area_ha
             FROM gadm2_provinces_simple
             WHERE iso = UPPER('{{iso}}') AND id_1 = {{id1}})
-        SELECT round(sum(f.areameters)/10000) AS value, area_ha
-          {{additionalSelect}}
-        FROM prodes_wgs84 f right join s
 
-     on st_intersects(f.the_geom, s.the_geom) group by area_ha
-     AND to_date(f.ano, 'YYYY') >= '{{begin}}'::date
-     AND to_date(f.ano, 'YYYY') < '{{end}}'::date `;
+            SELECT round(sum(f.areameters)/10000) AS value, area_ha
+            FROM prodes_wgs84 f right join s
+            on st_intersects(f.the_geom, s.the_geom)
+             AND to_date(f.ano, 'YYYY') >= '{{begin}}'::date
+             AND to_date(f.ano, 'YYYY') < '{{end}}'::date 
+            group by area_ha`;
 
 const USE = `SELECT round(sum(f.areameters)/10000) AS value, area_ha
-              {{additionalSelect}}
                 FROM {{useTable}} u left join prodes_wgs84 f
                 on ST_Intersects(f.the_geom, u.the_geom)
                 AND to_date(f.ano, 'YYYY') >= '{{begin}}'::date
@@ -57,7 +54,6 @@ const WDPA = `with p as (SELECT
                 ELSE ST_RemoveRepeatedPoints(the_geom, 0.005)
                 END as the_geom, gis_area*100 as area_ha FROM wdpa_protected_areas where wdpaid={{wdpaid}})
             SELECT round(sum(f.areameters)/10000) AS value, area_ha
-            {{additionalSelect}}
             FROM prodes_wgs84 f right join p
             on ST_Intersects(f.the_geom, p.the_geom)
             AND to_date(f.ano, 'YYYY') >= '{{begin}}'::date
