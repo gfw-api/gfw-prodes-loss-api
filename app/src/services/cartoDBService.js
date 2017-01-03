@@ -15,7 +15,7 @@ const WORLD = `SELECT round(sum(f.areameters)/10000) AS value
                 ST_SetSRID(
                   ST_GeomFromGeoJSON('{{{geojson}}}'), 4326), f.the_geom)`;
 
-const ISO = `with s as (SELECT st_simplify(the_geom, 0.0001) as the_geom, area_ha
+const ISO = `with s as (SELECT st_makevalid(st_simplify(the_geom, 0.0001)) as the_geom, area_ha
             FROM gadm2_countries_simple
             WHERE iso = UPPER('{{iso}}'))
 
@@ -26,7 +26,7 @@ const ISO = `with s as (SELECT st_simplify(the_geom, 0.0001) as the_geom, area_h
               AND to_date(f.ano, 'YYYY') < '{{end}}'::date
             group by area_ha `;
 
-const ID1 = ` with s as (SELECT st_simplify(the_geom, 0.0001) as the_geom, area_ha
+const ID1 = ` with s as (SELECT st_makevalid(st_simplify(the_geom, 0.0001)) as the_geom, area_ha
             FROM gadm2_provinces_simple
             WHERE iso = UPPER('{{iso}}') AND id_1 = {{id1}})
 
