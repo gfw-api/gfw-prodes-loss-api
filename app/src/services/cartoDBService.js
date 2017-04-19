@@ -7,18 +7,14 @@ var Mustache = require('mustache');
 var NotFound = require('errors/notFound');
 var JSONAPIDeserializer = require('jsonapi-serializer').Deserializer;
 
-const WORLD = ` 
-        with p as (select ST_Area(ST_SetSRID(ST_GeomFromGeoJSON('{{{geojson}}}'), 4326), TRUE)/1000 as area_ha ),
-        with c as (
-        SELECT round(sum(f.areameters)/10000) AS value
+const WORLD = `SELECT round(sum(f.areameters)/10000) AS value 
         FROM prodes_wgs84 f
         WHERE to_date(f.ano, 'YYYY') >= '{{begin}}'::date
               AND to_date(f.ano, 'YYYY') < '{{end}}'::date
               AND ST_INTERSECTS(
                 ST_SetSRID(
-                  ST_GeomFromGeoJSON('{{{geojson}}}'), 4326), f.the_geom))
-        select c.value, p.area_ha
-        from p, c`;
+                  ST_GeomFromGeoJSON('{{{geojson}}}'), 4326), f.the_geom)`;
+const AREA = `select ST_Area(ST_SetSRID(ST_GeomFromGeoJSON('{{{geojson}}}'), 4326), TRUE)/10000 as area_ha`;
 
 const ISO = `with s as (SELECT st_makevalid(st_simplify(the_geom, 0.0001)) as the_geom, area_ha
             FROM gadm2_countries_simple
@@ -247,7 +243,22 @@ class CartoDBService {
 
         let geostore = yield this.getGeostore(hashGeoStore);
         if (geostore && geostore.geojson) {
-            return yield this.getWorldWithGeojson(geostore.geojson, alertQuery, period);
+            logger.debug('Executing query in cartodb with geojson', geostore.geojson);
+            let periods = period.split(',');
+            let params = {
+                geojson: JSON.stringify(geostore.geojson.features[0].geometry),
+                begin: periods[0],
+                end: periods[1]
+            };
+            let data = yield executeThunk(this.client, WORLD, params);
+            if (data.rows) {
+                let result = data.rows[0];                
+                result.area_ha = geostore.area_ha;
+
+                result.downloadUrls = this.getDownloadUrls(WORLD, params);
+                return result;
+            }
+            return null;
         }
         throw new NotFound('Geostore not found');
     }
@@ -261,11 +272,12 @@ class CartoDBService {
             end: periods[1]
         };
         let data = yield executeThunk(this.client, WORLD, params);
+        let dataArea = yield executeThunk(this.client, AREA, params);
+        let result = {
+            area_ha: dataArea.rows[0].area_ha
+        };
         if (data.rows) {
-            let result = data.rows[0];
-            if(data.rows.length > 0){
-                result.area_ha = data.rows[0].area_ha;
-            }
+            result = data.rows[0];            
             result.downloadUrls = this.getDownloadUrls(WORLD, params);
             return result;
         }
