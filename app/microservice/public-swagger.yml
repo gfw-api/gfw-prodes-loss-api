@@ -24,6 +24,8 @@ schemes:
 produces:
   - application/vnd.api+json
 
+basePath: /v1
+
 paths:
   /prodes-loss:
     get:
@@ -61,6 +63,65 @@ paths:
           schema:
             $ref: '#/definitions/Errors'
 
+    post:
+      operationId: worldWithGeojson
+      produces:
+        - application/vnd.api+json
+      tags:
+        - PRODES
+      parameters:
+        - name: geojson
+          in: body
+          description: |
+            ##### examples
+              ```json
+              {
+                  "geojson": {
+                      "type": "FeatureCollection",
+                      "features": [{
+                          "type": "Feature",
+                          "properties": {},
+                          "geometry": {
+                              "type": "Polygon",
+                              "coordinates": [
+                                  [
+                                      [-5.273512601852417, 42.81137220349083],
+                                      [-5.273512601852417, 42.811803118457306],
+                                      [-5.272732079029083, 42.811803118457306],
+                                      [-5.272732079029083, 42.81137220349083],
+                                      [-5.273512601852417, 42.81137220349083]
+                                  ]
+                              ]
+                          }
+                      }]
+                  }
+              }
+              ```
+          required: true
+          schema:
+            $ref: '#/definitions/GeoJsonBodyRequest'
+        - name: period
+          in: query
+          description: Period of time (default last day) (example 2004-01-17,2015-06-01)
+          required: true
+          type: string
+      responses:
+        200:
+          description: Results obtained
+          schema:
+            $ref: '#/definitions/PRODESALERTSAPI'
+        404:
+          description: Geostore not found
+          schema:
+            $ref: '#/definitions/Errors'
+        500:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Errors'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Errors'
   /prodes-loss/use/{name}/{id}:
     get:
       operationId: use
@@ -371,3 +432,47 @@ definitions:
             type: string
           svg:
             type: string
+  GeoJsonBodyRequest:
+    type: object
+    properties:
+      geojson:
+        properties:
+          schema:
+            $ref: '#/definitions/Features'
+  Features:
+    type: object
+    properties:
+      type:
+        type: string
+        description: Type of feature
+      features:
+        type: array
+        description: Features
+        items:
+          $ref: '#/definitions/Feature'
+  Feature:
+    type: object
+    properties:
+      type:
+        type: string
+        description: Type of feature
+      properties:
+        type: object
+        description: Feature
+      geometry:
+        type: object
+        description: Geometries
+        properties:
+          schema:
+            $ref: '#/definitions/Geometry'
+  Geometry:
+    type: object
+    properties:
+      type:
+        type: string
+        description: Geometry type
+      coordinates:
+        type: array
+        description: Coordinates array
+        items:
+          type: object
