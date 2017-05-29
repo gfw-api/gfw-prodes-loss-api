@@ -173,7 +173,7 @@ class CartoDBService {
             begin: periods[0],
             end: periods[1]
         };
-        const geostore = yield GeostoreService.getGeostoreByIso(iso);
+        const geostore = yield GeostoreService.getGeostoreByIsoAndId(iso, id1);
         let data = yield executeThunk(this.client, ID1, params);
         if (geostore) {
             if (data.rows && data.rows.length > 0) {
