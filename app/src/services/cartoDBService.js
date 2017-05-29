@@ -248,7 +248,7 @@ class CartoDBService {
     * getWorld(hashGeoStore, alertQuery, period = defaultDate()) {
         logger.debug('Obtaining world with hashGeoStore %s', hashGeoStore);
 
-        let geostore = yield this.getGeostore(hashGeoStore);
+        const geostore = yield GeostoreService.getGeostoreByHash(hashGeoStore);
         if (geostore && geostore.geojson) {
             logger.debug('Executing query in cartodb with geojson', geostore.geojson);
             let periods = period.split(',');
