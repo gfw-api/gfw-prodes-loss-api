@@ -1,5 +1,5 @@
 prod:
-  image: vizzuality/gfw-prodes-loss-api:1.0.1${STAGING}
+  image: vizzuality/gfw-prodes-loss-api:1.2.0${STAGING}
   ports:
     - "3600"
   env_file:

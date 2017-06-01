@@ -3,42 +3,49 @@
     "name": "#(service.name)",
     "tags": ["gfw"],
     "urls": [{
-        "url": "/prodes-loss/admin/:iso",
+        "url": "/v1/prodes-loss/admin/:iso",
         "method": "GET",
         "endpoints": [{
             "method": "GET",
             "path": "/api/v1/prodes-loss/admin/:iso"
         }]
     }, {
-        "url": "/prodes-loss/admin/:iso/:id1",
+        "url": "/v1/prodes-loss/admin/:iso/:id1",
         "method": "GET",
         "endpoints": [{
             "method": "GET",
             "path": "/api/v1/prodes-loss/admin/:iso/:id1"
         }]
     }, {
-        "url": "/prodes-loss/use/:name/:id",
+        "url": "/v1/prodes-loss/use/:name/:id",
         "method": "GET",
         "endpoints": [{
             "method": "GET",
             "path": "/api/v1/prodes-loss/use/:name/:id"
         }]
     }, {
-        "url": "/prodes-loss/wdpa/:id",
+        "url": "/v1/prodes-loss/wdpa/:id",
         "method": "GET",
         "endpoints": [{
             "method": "GET",
             "path": "/api/v1/prodes-loss/wdpa/:id"
         }]
     }, {
-        "url": "/prodes-loss",
+        "url": "/v1/prodes-loss",
         "method": "GET",
         "endpoints": [{
             "method": "GET",
             "path": "/api/v1/prodes-loss"
         }]
     }, {
-        "url": "/prodes-loss/latest",
+        "url": "/v1/prodes-loss",
+        "method": "POST",
+        "endpoints": [{
+            "method": "POST",
+            "path": "/api/v1/prodes-loss"
+        }]
+    }, {
+        "url": "/v1/prodes-loss/latest",
         "method": "GET",
         "endpoints": [{
             "method": "GET",
