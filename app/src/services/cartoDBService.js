@@ -279,16 +279,17 @@ class CartoDBService {
             end: periods[1]
         };
         let data = yield executeThunk(this.client, WORLD, params);
+        logger.debug('data', data);
         let dataArea = yield executeThunk(this.client, AREA, params);
         let result = {
             area_ha: dataArea.rows[0].area_ha
         };
         if (data.rows) {
-            result = data.rows[0];            
-            result.downloadUrls = this.getDownloadUrls(WORLD, params);
-            return result;
+            result.value = data.rows[0].value || 0;
         }
-        return null;
+        result.area_ha = dataArea.rows[0].area_ha;
+        result.downloadUrls = this.getDownloadUrls(WORLD, params);
+        return result;
     }
 
     * latest(limit=3) {
