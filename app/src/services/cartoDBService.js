@@ -8,13 +8,18 @@ var NotFound = require('errors/notFound');
 const GeostoreService = require('services/geostoreService');
 var JSONAPIDeserializer = require('jsonapi-serializer').Deserializer;
 
-const WORLD = `SELECT round(sum(f.areameters)/10000) AS value 
-        FROM prodes_wgs84 f
-        WHERE to_date(f.ano, 'YYYY') >= '{{begin}}'::date
-              AND to_date(f.ano, 'YYYY') < '{{end}}'::date
-              AND ST_INTERSECTS(
-                ST_SetSRID(
-                  ST_GeomFromGeoJSON('{{{geojson}}}'), 4326), f.the_geom)`;
+
+const WORLD =  `WITH tmp_group AS (SELECT *
+                          FROM prodes_wgs84 f
+                          WHERE to_date(f.ano, 'YYYY') >= '{{begin}}'::date
+                          AND to_date(f.ano, 'YYYY') < '{{end}}'::date
+                          AND ST_Intersects(
+                                  ST_SetSRID(
+                                    ST_GeomFromGeoJSON('{{{geojson}}}'), 4326), f.the_geom))
+                          SELECT ROUND(SUM(ST_AREA(ST_Intersection(ST_SetSRID(
+                                    ST_GeomFromGeoJSON('{{{geojson}}}'), 4326), tmp_group.the_geom)::geography))*0.0001) as value
+                                    FROM tmp_group`;
+
 const AREA = `select ST_Area(ST_SetSRID(ST_GeomFromGeoJSON('{{{geojson}}}'), 4326), TRUE)/10000 as area_ha`;
 
 const ISO = `with s as (SELECT st_makevalid(st_simplify(the_geom, 0.0001)) as the_geom
@@ -36,7 +41,7 @@ const ID1 = ` with s as (SELECT st_makevalid(st_simplify(the_geom, 0.0001)) as t
             FROM prodes_wgs84 f inner join s
             on st_intersects(f.the_geom, s.the_geom)
              AND to_date(f.ano, 'YYYY') >= '{{begin}}'::date
-             AND to_date(f.ano, 'YYYY') < '{{end}}'::date 
+             AND to_date(f.ano, 'YYYY') < '{{end}}'::date
             `;
 
 const USE = `SELECT round(sum(f.areameters)/10000) AS value
@@ -157,7 +162,7 @@ class CartoDBService {
                 return result;
             } else {
                 return {
-                    area_ha: geostore.areaHa   
+                    area_ha: geostore.areaHa
                 };
             }
         }
@@ -184,7 +189,7 @@ class CartoDBService {
                 return result;
             } else {
                 return {
-                    area_ha: geostore.areaHa   
+                    area_ha: geostore.areaHa
                 };
             }
         }
@@ -211,7 +216,7 @@ class CartoDBService {
                 return result;
             } else {
                 return {
-                    area_ha: geostore.areaHa   
+                    area_ha: geostore.areaHa
                 };
             }
         }
@@ -237,7 +242,7 @@ class CartoDBService {
                 return result;
             } else {
                 return {
-                    area_ha: geostore.areaHa   
+                    area_ha: geostore.areaHa
                 };
             }
         }
@@ -259,7 +264,7 @@ class CartoDBService {
             };
             let data = yield executeThunk(this.client, WORLD, params);
             if (data.rows) {
-                let result = data.rows[0];                
+                let result = data.rows[0];
                 result.area_ha = geostore.areaHa;
 
                 result.downloadUrls = this.getDownloadUrls(WORLD, params);
@@ -279,16 +284,18 @@ class CartoDBService {
             end: periods[1]
         };
         let data = yield executeThunk(this.client, WORLD, params);
+        logger.debug('data', data);
         let dataArea = yield executeThunk(this.client, AREA, params);
         let result = {
             area_ha: dataArea.rows[0].area_ha
         };
         if (data.rows) {
-            result = data.rows[0];            
-            result.downloadUrls = this.getDownloadUrls(WORLD, params);
-            return result;
+            result.value = data.rows[0].value || 0;
+
         }
-        return null;
+        result.area_ha = dataArea.rows[0].area_ha;
+        result.downloadUrls = this.getDownloadUrls(WORLD, params);
+        return result;
     }
 
     * latest(limit=3) {

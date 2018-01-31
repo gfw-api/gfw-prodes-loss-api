@@ -43,7 +43,7 @@ paths:
         - name: period
           in: query
           description: Period of time (default last day) (example 2004-01-17,2015-06-01)
-          required: true
+          required: false
           type: string
       responses:
         200:
@@ -103,7 +103,7 @@ paths:
         - name: period
           in: query
           description: Period of time (default last day) (example 2004-01-17,2015-06-01)
-          required: true
+          required: false
           type: string
       responses:
         200:
@@ -143,7 +143,7 @@ paths:
         - name: period
           in: query
           description: Period of time (default last day) (example 2004-01-17,2015-06-01)
-          required: true
+          required: false
           type: string
       responses:
         200:
@@ -179,7 +179,7 @@ paths:
         - name: period
           in: query
           description: Period of time (default last day) (example 2004-01-17,2015-06-01)
-          required: true
+          required: false
           type: string
 
       responses:
@@ -217,7 +217,7 @@ paths:
         - name: period
           in: query
           description: Period of time (default last day) (example 2004-01-17,2015-06-01)
-          required: true
+          required: false
           type: string
 
       responses:
@@ -260,7 +260,7 @@ paths:
         - name: period
           in: query
           description: Period of time (default last day) (example 2004-01-17,2015-06-01)
-          required: true
+          required: false
           type: string
       responses:
         200:
