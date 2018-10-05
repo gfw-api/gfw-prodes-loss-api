@@ -1,3 +1,4 @@
+
 'use strict';
 
 var logger = require('logger');
@@ -13,8 +14,8 @@ var prodesLossSerializer = new JSONAPISerializer('prodes-loss', {
     keyForAttribute: 'camelCase'
 });
 
-var prodesLatestSerializer = new JSONAPISerializer('prodes-latest', {
-    attributes: ['ano'],
+var prodesLatestSerializerV2 = new JSONAPISerializer('prodes-latest', {
+    attributes: ['latest'],
     typeForAttribute: function(attribute, record) {
         return attribute;
     }
@@ -26,7 +27,7 @@ class ProdesLossSerializer {
         return prodesLossSerializer.serialize(data);
     }
     static serializeLatest(data) {
-        return prodesLatestSerializer.serialize(data);
+        return prodesLatestSerializerV2.serialize(data);
     }
 }
 

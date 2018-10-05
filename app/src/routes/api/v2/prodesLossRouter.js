@@ -4,7 +4,7 @@ var Router = require('koa-router');
 var logger = require('logger');
 var CartoDBServiceV2 = require('services/cartoDBServiceV2');
 var NotFound = require('errors/notFound');
-var ProdesLossSerializer = require('serializers/prodesLossSerializer');
+var ProdesLossSerializerV2 = require('serializers/prodesLossSerializer');
 
 
 var router = new Router({
@@ -16,19 +16,19 @@ class ProdesLossRouter {
         logger.info('Obtaining national data');
         let data = yield CartoDBServiceV2.getAdm0(this.params.iso, this.query.period);
 
-        this.body = ProdesLossSerializer.serialize(data);
+        this.body = ProdesLossSerializerV2.serialize(data);
     }
 
     static * getAdm1() {
         logger.info('Obtaining subnational data');
         let data = yield CartoDBServiceV2.getAdm1(this.params.iso, this.params.id1, this.query.period);
-        this.body = ProdesLossSerializer.serialize(data);
+        this.body = ProdesLossSerializerV2.serialize(data);
     }
 
     static * getAdm2() {
         logger.info('Obtaining subnational data');
         let data = yield CartoDBServiceV2.getAdm2(this.params.iso, this.params.id1, this.params.id2, this.query.period);
-        this.body = ProdesLossSerializer.serialize(data);
+        this.body = ProdesLossSerializerV2.serialize(data);
     }
 
     static * use() {
@@ -37,13 +37,13 @@ class ProdesLossRouter {
             this.throw(404, 'Name not found');
         }
         let data = yield CartoDBServiceV2.getUse(this.params.name, this.params.id, this.query.period);
-        this.body = ProdesLossSerializer.serialize(data);
+        this.body = ProdesLossSerializerV2.serialize(data);
     }
 
     static * wdpa() {
         logger.info('Obtaining wpda data with id %s', this.params.id);
         let data = yield CartoDBServiceV2.getWdpa(this.params.id, this.query.period);
-        this.body = ProdesLossSerializer.serialize(data);
+        this.body = ProdesLossSerializerV2.serialize(data);
     }
 
     static * world() {
@@ -52,7 +52,7 @@ class ProdesLossRouter {
         try {
             let data = yield CartoDBServiceV2.getWorld(this.query.geostore, this.query.period);
 
-            this.body = ProdesLossSerializer.serialize(data);
+            this.body = ProdesLossSerializerV2.serialize(data);
         } catch (err) {
             if (err instanceof NotFound) {
                 this.throw(404, 'Geostore not found');
@@ -87,7 +87,7 @@ class ProdesLossRouter {
         try{            
             let data = yield CartoDBServiceV2.getWorldWithGeojson(ProdesLossRouter.checkGeojson(this.request.body.geojson), this.query.period);
 
-            this.body = ProdesLossSerializer.serialize(data);
+            this.body = ProdesLossSerializerV2.serialize(data);
         } catch(err){
             if(err instanceof NotFound){
                 this.throw(404, 'Geostore not found');
@@ -101,7 +101,7 @@ class ProdesLossRouter {
     static * latest() {
         logger.info('Obtaining latest data');
         let data = yield CartoDBServiceV2.latest(this.query.limit);
-        this.body = ProdesLossSerializer.serializeLatest(data);
+        this.body = ProdesLossSerializerV2.serializeLatest(data);
     }
 
 }
