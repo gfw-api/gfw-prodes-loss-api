@@ -19,37 +19,40 @@ const WORLD = `WITH tmp_group AS (SELECT *
 
 const AREA = `select ST_Area(ST_SetSRID(ST_GeomFromGeoJSON('{{{geojson}}}'), 4326), TRUE)/10000 as area_ha`;
 
-const ISO = `with s as (SELECT st_makevalid(st_simplify(the_geom, 0.05)) as the_geom, area_ha
+const ISO = `with s as (SELECT st_makevalid(st_simplify(the_geom, {{simplify}})) as the_geom, area_ha
             FROM gadm36_countries
             WHERE gid_0 = UPPER('{{iso}}'))
 
-            SELECT round(sum(f.areameters)/10000) AS value
+            SELECT round(sum(f.areameters)/10000) AS value, s.area_ha
             FROM prodes_wgs84 f inner join s
             on st_intersects(f.the_geom, s.the_geom)
               AND to_date(f.ano, 'YYYY') >= '{{begin}}'::date
               AND to_date(f.ano, 'YYYY') < '{{end}}'::date
+              GROUP BY s.area_ha
             `;
 
-const ID1 = ` with s as (SELECT st_makevalid(st_simplify(the_geom, 0.05)) as the_geom, area_ha
+const ID1 = ` with s as (SELECT st_makevalid(st_simplify(the_geom, {{simplify}})) as the_geom, area_ha
             FROM gadm36_adm1
             WHERE gid_0 = UPPER('{{iso}}') AND gid_1 = '{{id1}}')
 
-            SELECT round(sum(f.areameters)/10000) AS value
+            SELECT round(sum(f.areameters)/10000) AS value, s.area_ha
             FROM prodes_wgs84 f inner join s
             on st_intersects(f.the_geom, s.the_geom)
              AND to_date(f.ano, 'YYYY') >= '{{begin}}'::date
              AND to_date(f.ano, 'YYYY') < '{{end}}'::date
+             GROUP BY s.area_ha
             `;
 
-const ID2 = ` with s as (SELECT st_makevalid(st_simplify(the_geom, 0.05)) as the_geom, area_ha
+const ID2 = ` with s as (SELECT st_makevalid(st_simplify(the_geom, {{simplify}})) as the_geom, area_ha
             FROM gadm36_adm2
             WHERE gid_0 = UPPER('{{iso}}') AND gid_1 = '{{id1}}' AND gid_2 = '{{id2}}')
 
-            SELECT round(sum(f.areameters)/10000) AS value
+            SELECT round(sum(f.areameters)/10000) AS value, s.area_ha
             FROM prodes_wgs84 f inner join s
             on st_intersects(f.the_geom, s.the_geom)
              AND to_date(f.ano, 'YYYY') >= '{{begin}}'::date
              AND to_date(f.ano, 'YYYY') < '{{end}}'::date
+             GROUP BY s.area_ha
             `;
 
 const USE = `SELECT round(sum(f.areameters)/10000) AS value
@@ -111,9 +114,18 @@ let getYesterday = function () {
 
 let defaultDate = function () {
     let to = getToday();
-    let from = getYesterday();
+    let from = '2000-01-01';
     return from + ',' + to;
 };
+
+const getSimplify = (iso) => {
+    let thresh = 0.005;
+    if (iso) {
+      const bigCountries = ['USA', 'RUS', 'CAN', 'CHN', 'BRA', 'IDN'];
+      thresh = bigCountries.includes(iso) ? 0.05 : 0.005;
+    }
+    return thresh;
+  };
 
 class CartoDBService {
 
@@ -143,11 +155,13 @@ class CartoDBService {
     * getAdm0(iso, period = defaultDate()) {
         logger.debug('Obtaining national of iso %s', iso);
         const gid = routeToGid(iso);
+        const simplify = getSimplify(iso);
         let periods = period.split(',');
         let params = {
             iso: gid.adm0,
             begin: periods[0],
-            end: periods[1]
+            end: periods[1],
+            simplify
         };
         let data = yield executeThunk(this.client, ISO, params);
         if (data && data.rows && data.rows.length > 0) {
@@ -164,12 +178,14 @@ class CartoDBService {
     * getAdm1(iso, id1, period = defaultDate()) {
         logger.debug('Obtaining subnational of iso %s and id1', iso, id1);
         const gid = routeToGid(iso, id1);
+        const simplify = getSimplify(iso) / 10;
         let periods = period.split(',');
         let params = {
             iso: gid.adm0,
             id1: gid.adm1,
             begin: periods[0],
-            end: periods[1]
+            end: periods[1],
+            simplify
         };
         let data = yield executeThunk(this.client, ID1, params);
         if (data && data.rows && data.rows.length > 0) {
@@ -186,13 +202,15 @@ class CartoDBService {
     * getAdm2(iso, id1, id2, period = defaultDate()) {
     logger.debug('Obtaining subnational of iso %s and id1', iso, id1);
     const gid = routeToGid(iso, id1, id2);
+    const simplify = getSimplify(iso) / 100;
     let periods = period.split(',');
     let params = {
         iso: gid.adm0,
         id1: gid.adm1,
         id2: gid.adm2,
         begin: periods[0],
-        end: periods[1]
+        end: periods[1],
+        simplify
     };
     let data = yield executeThunk(this.client, ID2, params);
     if (data && data.rows && data.rows.length > 0) {
