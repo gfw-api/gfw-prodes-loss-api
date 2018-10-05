@@ -3,7 +3,7 @@
 
 var logger = require('logger');
 var JSONAPISerializer = require('jsonapi-serializer').Serializer;
-var prodesLossSerializer = new JSONAPISerializer('prodes-loss', {
+var prodesLossSerializerV2 = new JSONAPISerializer('prodes-loss', {
     attributes: ['value', 'period', 'min_date', 'max_date', 'downloadUrls', 'area_ha'],
     typeForAttribute: function(attribute, record) {
         return attribute;
@@ -14,21 +14,21 @@ var prodesLossSerializer = new JSONAPISerializer('prodes-loss', {
     keyForAttribute: 'camelCase'
 });
 
-var prodesLatestSerializerV2 = new JSONAPISerializer('prodes-latest', {
+var prodesLatestSerializer = new JSONAPISerializer('prodes-latest', {
     attributes: ['latest'],
     typeForAttribute: function(attribute, record) {
         return attribute;
     }
 });
 
-class ProdesLossSerializer {
+class ProdesLossSerializerV2 {
 
     static serialize(data) {
-        return prodesLossSerializer.serialize(data);
+        return prodesLossSerializerV2.serialize(data);
     }
     static serializeLatest(data) {
-        return prodesLatestSerializerV2.serialize(data);
+        return prodesLatestSerializer.serialize(data);
     }
 }
 
-module.exports = ProdesLossSerializer;
+module.exports = ProdesLossSerializerV2;

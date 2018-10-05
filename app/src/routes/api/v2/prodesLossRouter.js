@@ -4,7 +4,7 @@ var Router = require('koa-router');
 var logger = require('logger');
 var CartoDBServiceV2 = require('services/cartoDBServiceV2');
 var NotFound = require('errors/notFound');
-var ProdesLossSerializerV2 = require('serializers/prodesLossSerializer');
+var ProdesLossSerializerV2 = require('serializers/prodesLossSerializerV2');
 
 
 var router = new Router({
@@ -15,7 +15,6 @@ class ProdesLossRouter {
     static * getAdm0() {
         logger.info('Obtaining national data');
         let data = yield CartoDBServiceV2.getAdm0(this.params.iso, this.query.period);
-
         this.body = ProdesLossSerializerV2.serialize(data);
     }
 
