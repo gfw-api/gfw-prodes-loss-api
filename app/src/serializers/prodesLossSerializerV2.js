@@ -14,7 +14,7 @@ var prodesLossSerializerV2 = new JSONAPISerializer('prodes-loss', {
     keyForAttribute: 'camelCase'
 });
 
-var prodesLatestSerializer = new JSONAPISerializer('prodes-latest', {
+var prodesLatestSerializerV2 = new JSONAPISerializer('prodes-latest', {
     attributes: ['latest'],
     typeForAttribute: function(attribute, record) {
         return attribute;
@@ -27,7 +27,7 @@ class ProdesLossSerializerV2 {
         return prodesLossSerializerV2.serialize(data);
     }
     static serializeLatest(data) {
-        return prodesLatestSerializer.serialize(data);
+        return prodesLatestSerializerV2.serialize(data);
     }
 }
 
