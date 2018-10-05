@@ -23,33 +23,36 @@ const ISO = `with s as (SELECT st_makevalid(st_simplify(the_geom, 0.05)) as the_
             FROM gadm36_countries
             WHERE gid_0 = UPPER('{{iso}}'))
 
-            SELECT round(sum(f.areameters)/10000) AS value
+            SELECT round(sum(f.areameters)/10000) AS value, s.area_ha
             FROM prodes_wgs84 f inner join s
             on st_intersects(f.the_geom, s.the_geom)
               AND to_date(f.ano, 'YYYY') >= '{{begin}}'::date
               AND to_date(f.ano, 'YYYY') < '{{end}}'::date
+              GROUP BY s.area_ha
             `;
 
 const ID1 = ` with s as (SELECT st_makevalid(st_simplify(the_geom, 0.05)) as the_geom, area_ha
             FROM gadm36_adm1
             WHERE gid_0 = UPPER('{{iso}}') AND gid_1 = '{{id1}}')
 
-            SELECT round(sum(f.areameters)/10000) AS value
+            SELECT round(sum(f.areameters)/10000) AS value, s.area_ha
             FROM prodes_wgs84 f inner join s
             on st_intersects(f.the_geom, s.the_geom)
              AND to_date(f.ano, 'YYYY') >= '{{begin}}'::date
              AND to_date(f.ano, 'YYYY') < '{{end}}'::date
+             GROUP BY s.area_ha
             `;
 
 const ID2 = ` with s as (SELECT st_makevalid(st_simplify(the_geom, 0.05)) as the_geom, area_ha
             FROM gadm36_adm2
             WHERE gid_0 = UPPER('{{iso}}') AND gid_1 = '{{id1}}' AND gid_2 = '{{id2}}')
 
-            SELECT round(sum(f.areameters)/10000) AS value
+            SELECT round(sum(f.areameters)/10000) AS value, s.area_ha
             FROM prodes_wgs84 f inner join s
             on st_intersects(f.the_geom, s.the_geom)
              AND to_date(f.ano, 'YYYY') >= '{{begin}}'::date
              AND to_date(f.ano, 'YYYY') < '{{end}}'::date
+             GROUP BY s.area_ha
             `;
 
 const USE = `SELECT round(sum(f.areameters)/10000) AS value
@@ -111,7 +114,7 @@ let getYesterday = function () {
 
 let defaultDate = function () {
     let to = getToday();
-    let from = getYesterday();
+    let from = '2000-01-01';
     return from + ',' + to;
 };
 
@@ -197,6 +200,7 @@ class CartoDBService {
     let data = yield executeThunk(this.client, ID2, params);
     if (data && data.rows && data.rows.length > 0) {
         let result = data.rows[0];
+        logger.info('HERE ---->', data.rows[0]);
         result.area_ha = result.area_ha;
         result.period = period;
         result.id = gid.adm2;
