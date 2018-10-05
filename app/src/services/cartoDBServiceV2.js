@@ -19,16 +19,19 @@ const WORLD = `WITH tmp_group AS (SELECT *
 
 const AREA = `select ST_Area(ST_SetSRID(ST_GeomFromGeoJSON('{{{geojson}}}'), 4326), TRUE)/10000 as area_ha`;
 
+const GIDAREA = `select area_ha FROM {{table}} WHERE gid_{{level}} = '{{gid}}'`;
+
 const ISO = `with s as (SELECT st_makevalid(st_simplify(the_geom, {{simplify}})) as the_geom, area_ha
             FROM gadm36_countries
-            WHERE gid_0 = UPPER('{{iso}}'))
+            WHERE gid_0 = UPPER('{{iso}}')),
 
-            SELECT round(sum(f.areameters)/10000) AS value, s.area_ha
+            r AS (SELECT round(sum(f.areameters)/10000) AS value, s.area_ha
             FROM prodes_wgs84 f inner join s
             on st_intersects(f.the_geom, s.the_geom)
               AND to_date(f.ano, 'YYYY') >= '{{begin}}'::date
               AND to_date(f.ano, 'YYYY') < '{{end}}'::date
-              GROUP BY s.area_ha
+              GROUP BY s.area_ha)
+              SELECT * FROM r
             `;
 
 const ID1 = ` with s as (SELECT st_makevalid(st_simplify(the_geom, {{simplify}})) as the_geom, area_ha
@@ -164,9 +167,12 @@ class CartoDBService {
             simplify
         };
         let data = yield executeThunk(this.client, ISO, params);
-        if (data && data.rows && data.rows.length > 0) {
-            let result = data.rows[0];
-            result.area_ha = result.area_ha;
+        let area = yield executeThunk(this.client, GIDAREA, {table: 'gadm36_countries', level: '0', gid: params.iso});
+        if (data && data.rows && area && area.rows) {
+            let result = data.rows && data.rows[0] || {};
+            let areaHa = area.rows && area.rows[0] || null;
+            result.area_ha = areaHa.area_ha;
+            result.value = result.value || null;
             result.period = period;
             result.id = params.iso;
             result.downloadUrls = this.getDownloadUrls(ISO, params);
@@ -188,9 +194,11 @@ class CartoDBService {
             simplify
         };
         let data = yield executeThunk(this.client, ID1, params);
+        let area = yield executeThunk(this.client, GIDAREA, {table: 'gadm36_adm1', level: '1', gid: params.id1});
         if (data && data.rows && data.rows.length > 0) {
             let result = data.rows[0];
-            result.area_ha = result.area_ha;
+            let areaHa = area.rows && area.rows[0] || null;
+            result.area_ha = areaHa.area_ha;
             result.period = period;
             result.id = gid.adm1;
             result.downloadUrls = this.getDownloadUrls(ID1, params);
@@ -213,9 +221,11 @@ class CartoDBService {
         simplify
     };
     let data = yield executeThunk(this.client, ID2, params);
+    let area = yield executeThunk(this.client, GIDAREA, {table: 'gadm36_adm2', level: '2', gid: params.id2});
     if (data && data.rows && data.rows.length > 0) {
         let result = data.rows[0];
-        result.area_ha = result.area_ha;
+        let areaHa = area.rows && area.rows[0] || null;
+        result.area_ha = areaHa.area_ha;
         result.period = period;
         result.id = gid.adm2;
         result.downloadUrls = this.getDownloadUrls(ID2, params);
