@@ -1,13 +1,10 @@
 'use strict';
 var logger = require('logger');
-var path = require('path');
 var config = require('config');
 var CartoDB = require('cartodb');
 var Mustache = require('mustache');
 var NotFound = require('errors/notFound');
 const GeostoreService = require('services/geostoreService');
-var JSONAPIDeserializer = require('jsonapi-serializer').Deserializer;
-
 
 const WORLD = `WITH tmp_group AS (SELECT *
                           FROM prodes_wgs84 f
@@ -78,11 +75,9 @@ const WDPA = `with p as (SELECT
             AND to_date(f.ano, 'YYYY') < '{{end}}'::date
             `;
 
-const LATEST = `SELECT DISTINCT ano
-        FROM prodes_wgs84
-        WHERE ano IS NOT NULL
-        ORDER BY ano DESC
-        LIMIT {{limit}}`;
+const LATEST = `with a AS (SELECT DISTINCT ano
+FROM prodes_wgs84
+WHERE ano IS NOT NULL) SELECT MAX(ano) AS latest FROM a`;
 
 var executeThunk = function (client, sql, params) {
     return function (callback) {
@@ -145,7 +140,7 @@ class CartoDBService {
         }
     }
 
-    * getAdm0(iso, alertQuery, period = defaultDate()) {
+    * getAdm0(iso, period = defaultDate()) {
         logger.debug('Obtaining national of iso %s', iso);
         const gid = routeToGid(iso);
         let periods = period.split(',');
@@ -166,7 +161,7 @@ class CartoDBService {
         return null;
     }
 
-    * getAdm1(iso, id1, alertQuery, period = defaultDate()) {
+    * getAdm1(iso, id1, period = defaultDate()) {
         logger.debug('Obtaining subnational of iso %s and id1', iso, id1);
         const gid = routeToGid(iso, id1);
         let periods = period.split(',');
@@ -188,7 +183,7 @@ class CartoDBService {
         return null;
     }
 
-    * getAdm2(iso, id1, id2, alertQuery, period = defaultDate()) {
+    * getAdm2(iso, id1, id2, period = defaultDate()) {
     logger.debug('Obtaining subnational of iso %s and id1', iso, id1);
     const gid = routeToGid(iso, id1, id2);
     let periods = period.split(',');
@@ -211,7 +206,7 @@ class CartoDBService {
     return null;
 }
 
-    * getUse(useName, useTable, id, alertQuery, period = defaultDate()) {
+    * getUse(useTable, id, period = defaultDate()) {
         logger.debug('Obtaining use with id %s', id);
         let periods = period.split(',');
         let params = {
@@ -220,13 +215,14 @@ class CartoDBService {
             begin: periods[0],
             end: periods[1]
         };
-        const geostore = yield GeostoreService.getGeostoreByUse(useName, id);
+        const geostore = yield GeostoreService.getGeostoreByUse(useTable, id);
         let data = yield executeThunk(this.client, USE, params);
         if (geostore) {
             if (data.rows && data.rows.length > 0) {
                 let result = data.rows[0];
                 result.area_ha = geostore.areaHa;
-                result.period = this.getPeriodText(period);
+                result.period = period;
+                result.id = id;
                 result.downloadUrls = this.getDownloadUrls(USE, params);
                 return result;
             } else {
@@ -238,7 +234,7 @@ class CartoDBService {
         return null;
     }
 
-    * getWdpa(wdpaid, alertQuery, period = defaultDate()) {
+    * getWdpa(wdpaid, period = defaultDate()) {
         logger.debug('Obtaining wpda of id %s', wdpaid);
         let periods = period.split(',');
         let params = {
@@ -252,7 +248,8 @@ class CartoDBService {
             if (data.rows && data.rows.length > 0) {
                 let result = data.rows[0];
                 result.area_ha = geostore.areaHa;
-                result.period = this.getPeriodText(period);
+                result.id = wdpaid;
+                result.period = period;
                 result.downloadUrls = this.getDownloadUrls(WDPA, params);
                 return result;
             } else {
@@ -265,7 +262,7 @@ class CartoDBService {
     }
 
 
-    * getWorld(hashGeoStore, alertQuery, period = defaultDate()) {
+    * getWorld(hashGeoStore, period = defaultDate()) {
         logger.debug('Obtaining world with hashGeoStore %s', hashGeoStore);
 
         const geostore = yield GeostoreService.getGeostoreByHash(hashGeoStore);
@@ -290,7 +287,7 @@ class CartoDBService {
         throw new NotFound('Geostore not found');
     }
 
-    * getWorldWithGeojson(geojson, alertQuery, period = defaultDate()) {
+    * getWorldWithGeojson(geojson, period = defaultDate()) {
         logger.debug('Executing query in cartodb with geojson', geojson);
         let periods = period.split(',');
         let params = {
@@ -313,14 +310,10 @@ class CartoDBService {
         return result;
     }
 
-    * latest(limit = 3) {
-        logger.debug('Obtaining latest with limit %s', limit);
-        let params = {
-            limit: limit
-        };
-        let data = yield executeThunk(this.client, LATEST, params);
-
-        if (data.rows) {
+    * latest() {
+        logger.debug('Obtaining latest date');
+        let data = yield executeThunk(this.client, LATEST);
+        if (data && data.rows && data.rows.length) {
             let result = data.rows;
             return result;
         }

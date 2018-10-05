@@ -14,7 +14,7 @@ var prodesLossSerializer = new JSONAPISerializer('prodes-loss', {
 });
 
 var prodesLatestSerializer = new JSONAPISerializer('prodes-latest', {
-    attributes: ['ano'],
+    attributes: ['latest'],
     typeForAttribute: function(attribute, record) {
         return attribute;
     }

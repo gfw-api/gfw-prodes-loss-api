@@ -14,53 +14,35 @@ var router = new Router({
 class ProdesLossRouter {
     static * getAdm0() {
         logger.info('Obtaining national data');
-        let data = yield CartoDBServiceV2.getAdm0(this.params.iso, this.query.alertQuery, this.query.period);
+        let data = yield CartoDBServiceV2.getAdm0(this.params.iso, this.query.period);
 
         this.body = ProdesLossSerializer.serialize(data);
     }
 
     static * getAdm1() {
         logger.info('Obtaining subnational data');
-        let data = yield CartoDBServiceV2.getAdm1(this.params.iso, this.params.id1, this.query.alertQuery, this.query.period);
+        let data = yield CartoDBServiceV2.getAdm1(this.params.iso, this.params.id1, this.query.period);
         this.body = ProdesLossSerializer.serialize(data);
     }
 
     static * getAdm2() {
         logger.info('Obtaining subnational data');
-        let data = yield CartoDBServiceV2.getAdm2(this.params.iso, this.params.id1, this.params.id2, this.query.alertQuery, this.query.period);
+        let data = yield CartoDBServiceV2.getAdm2(this.params.iso, this.params.id1, this.params.id2, this.query.period);
         this.body = ProdesLossSerializer.serialize(data);
     }
 
     static * use() {
         logger.info('Obtaining use data with name %s and id %s', this.params.name, this.params.id);
-        let useTable = null;
-        switch (this.params.name) {
-            case 'mining':
-                useTable = 'gfw_mining';
-                break;
-            case 'oilpalm':
-                useTable = 'gfw_oil_palm';
-                break;
-            case 'fiber':
-                useTable = 'gfw_wood_fiber';
-                break;
-            case 'logging':
-                useTable = 'gfw_logging';
-                break;
-            default:
-                useTable = this.params.name;
-        }
-        if (!useTable) {
+        if (!this.params.name) {
             this.throw(404, 'Name not found');
         }
-        let data = yield CartoDBServiceV2.getUse(this.params.name, useTable, this.params.id, this.query.alertQuery, this.query.period);
+        let data = yield CartoDBServiceV2.getUse(this.params.name, this.params.id, this.query.period);
         this.body = ProdesLossSerializer.serialize(data);
-
     }
 
     static * wdpa() {
         logger.info('Obtaining wpda data with id %s', this.params.id);
-        let data = yield CartoDBServiceV2.getWdpa(this.params.id, this.query.alertQuery, this.query.period);
+        let data = yield CartoDBServiceV2.getWdpa(this.params.id, this.query.period);
         this.body = ProdesLossSerializer.serialize(data);
     }
 
@@ -68,7 +50,7 @@ class ProdesLossRouter {
         logger.info('Obtaining world data');
         this.assert(this.query.geostore, 400, 'GeoJSON param required');
         try {
-            let data = yield CartoDBServiceV2.getWorld(this.query.geostore, this.query.alertQuery, this.query.period);
+            let data = yield CartoDBServiceV2.getWorld(this.query.geostore, this.query.period);
 
             this.body = ProdesLossSerializer.serialize(data);
         } catch (err) {
@@ -103,7 +85,7 @@ class ProdesLossRouter {
         logger.info('Obtaining world data with geostore');
         this.assert(this.request.body.geojson, 400, 'GeoJSON param required');
         try{            
-            let data = yield CartoDBServiceV2.getWorldWithGeojson(ProdesLossRouter.checkGeojson(this.request.body.geojson), this.query.alertQuery, this.query.period);
+            let data = yield CartoDBServiceV2.getWorldWithGeojson(ProdesLossRouter.checkGeojson(this.request.body.geojson), this.query.period);
 
             this.body = ProdesLossSerializer.serialize(data);
         } catch(err){
