@@ -215,7 +215,6 @@ class CartoDBService {
     let data = yield executeThunk(this.client, ID2, params);
     if (data && data.rows && data.rows.length > 0) {
         let result = data.rows[0];
-        logger.info('HERE ---->', data.rows[0]);
         result.area_ha = result.area_ha;
         result.period = period;
         result.id = gid.adm2;
