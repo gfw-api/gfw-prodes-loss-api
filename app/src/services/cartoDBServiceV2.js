@@ -124,11 +124,11 @@ let defaultDate = function () {
 const getSimplify = (iso) => {
     let thresh = 0.005;
     if (iso) {
-      const bigCountries = ['USA', 'RUS', 'CAN', 'CHN', 'BRA', 'IDN'];
-      thresh = bigCountries.includes(iso) ? 0.05 : 0.005;
+        const bigCountries = ['USA', 'RUS', 'CAN', 'CHN', 'BRA', 'IDN'];
+        thresh = bigCountries.includes(iso) ? 0.05 : 0.005;
     }
     return thresh;
-  };
+};
 
 class CartoDBService {
 
@@ -167,15 +167,20 @@ class CartoDBService {
             simplify
         };
         let data = yield executeThunk(this.client, ISO, params);
-        let area = yield executeThunk(this.client, GIDAREA, {table: 'gadm36_countries', level: '0', gid: params.iso});
-        if (data && data.rows && area && area.rows) {
-            let result = data.rows && data.rows[0] || {};
+        let result = data.rows && data.rows[0] || {};
+        result.downloadUrls = this.getDownloadUrls(ISO, params);
+        result.id = params.iso;
+        result.period = period;
+        if (data && data.rows && data.rows.length) {
+            result.area_ha = result.area_ha;
+            result.value = result.value || 0;
+            return result;
+        }
+        let area = yield executeThunk(this.client, GIDAREA, { table: 'gadm36_countries', level: '0', gid: params.iso });
+        if (area && area.rows && area.rows.length) {
             let areaHa = area.rows && area.rows[0] || null;
             result.area_ha = areaHa.area_ha;
-            result.value = result.value || null;
-            result.period = period;
-            result.id = params.iso;
-            result.downloadUrls = this.getDownloadUrls(ISO, params);
+            result.value = null;
             return result;
         }
         return null;
@@ -194,45 +199,57 @@ class CartoDBService {
             simplify
         };
         let data = yield executeThunk(this.client, ID1, params);
-        let area = yield executeThunk(this.client, GIDAREA, {table: 'gadm36_adm1', level: '1', gid: params.id1});
-        if (data && data.rows && data.rows.length > 0) {
-            let result = data.rows[0];
+        let result = data.rows && data.rows[0] || {};
+        result.downloadUrls = this.getDownloadUrls(ID1, params);
+        result.id = params.iso;
+        result.period = period;
+        if (data && data.rows && data.rows.length) {
+            result.area_ha = result.area_ha;
+            result.value = result.value || 0;
+            return result;
+        }
+        let area = yield executeThunk(this.client, GIDAREA, { table: 'gadm36_adm1', level: '1', gid: params.id1 });
+        if (area && area.rows && area.rows.length) {
             let areaHa = area.rows && area.rows[0] || null;
             result.area_ha = areaHa.area_ha;
-            result.period = period;
-            result.id = gid.adm1;
-            result.downloadUrls = this.getDownloadUrls(ID1, params);
+            result.value = null;
             return result;
         }
         return null;
     }
 
     * getAdm2(iso, id1, id2, period = defaultDate()) {
-    logger.debug('Obtaining subnational of iso %s and id1', iso, id1);
-    const gid = routeToGid(iso, id1, id2);
-    const simplify = getSimplify(iso) / 100;
-    let periods = period.split(',');
-    let params = {
-        iso: gid.adm0,
-        id1: gid.adm1,
-        id2: gid.adm2,
-        begin: periods[0],
-        end: periods[1],
-        simplify
-    };
-    let data = yield executeThunk(this.client, ID2, params);
-    let area = yield executeThunk(this.client, GIDAREA, {table: 'gadm36_adm2', level: '2', gid: params.id2});
-    if (data && data.rows && data.rows.length > 0) {
-        let result = data.rows[0];
-        let areaHa = area.rows && area.rows[0] || null;
-        result.area_ha = areaHa.area_ha;
+        logger.debug('Obtaining subnational of iso %s and id1', iso, id1);
+        const gid = routeToGid(iso, id1, id2);
+        const simplify = getSimplify(iso) / 100;
+        let periods = period.split(',');
+        let params = {
+            iso: gid.adm0,
+            id1: gid.adm1,
+            id2: gid.adm2,
+            begin: periods[0],
+            end: periods[1],
+            simplify
+        };
+        let data = yield executeThunk(this.client, ID2, params);
+        let result = data.rows && data.rows[0] || {};
+        result.downloadUrls = this.getDownloadUrls(ID1, params);
+        result.id = params.iso;
         result.period = period;
-        result.id = gid.adm2;
-        result.downloadUrls = this.getDownloadUrls(ID2, params);
-        return result;
+        if (data && data.rows && data.rows.length) {
+            result.area_ha = result.area_ha;
+            result.value = result.value || 0;
+            return result;
+        }
+        let area = yield executeThunk(this.client, GIDAREA, { table: 'gadm36_adm2', level: '2', gid: params.id2 });
+        if (area && area.rows && area.rows.length) {
+            let areaHa = area.rows && area.rows[0] || null;
+            result.area_ha = areaHa.area_ha;
+            result.value = null;
+            return result;
+        }
+        return null;
     }
-    return null;
-}
 
     * getUse(useTable, id, period = defaultDate()) {
         logger.debug('Obtaining use with id %s', id);
