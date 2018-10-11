@@ -281,6 +281,14 @@ class CartoDBService {
             result.value = 0;
             return result;
         }
+        const geostore = yield GeostoreService.getGeostoreByUse(useName, id);
+        if(geostore){
+            return {
+                id: id,
+                value: 0,
+                area_ha: geostore.area_ha
+            }
+        }
         return null;
     }
 
@@ -306,6 +314,14 @@ class CartoDBService {
             result.id = wdpaid;
             result.value = 0;
             return result;
+        }
+        const geostore = yield GeostoreService.getGeostoreByUse(useName, id);
+        if(geostore){
+            return {
+                id: wdpaid,
+                value: 0,
+                area_ha: geostore.area_ha
+            }
         }
         return null;
     }
