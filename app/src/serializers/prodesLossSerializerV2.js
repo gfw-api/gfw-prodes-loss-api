@@ -9,7 +9,7 @@ var prodesLossSerializerV2 = new JSONAPISerializer('prodes-loss', {
         return attribute;
     },
     downloadUrls: {
-        attributes: ['csv', 'geojson', 'kml', 'shp', 'svg']
+        attributes: ['csv', 'json', 'kml', 'shp', 'svg']
     },
     keyForAttribute: 'camelCase'
 });
