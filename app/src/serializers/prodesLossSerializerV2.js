@@ -1,11 +1,8 @@
+const JSONAPISerializer = require('jsonapi-serializer').Serializer;
 
-'use strict';
-
-var logger = require('logger');
-var JSONAPISerializer = require('jsonapi-serializer').Serializer;
-var prodesLossSerializerV2 = new JSONAPISerializer('prodes-loss', {
+const prodesLossSerializerV2 = new JSONAPISerializer('prodes-loss', {
     attributes: ['value', 'period', 'min_date', 'max_date', 'downloadUrls', 'area_ha'],
-    typeForAttribute: function(attribute, record) {
+    typeForAttribute(attribute) {
         return attribute;
     },
     downloadUrls: {
@@ -14,9 +11,9 @@ var prodesLossSerializerV2 = new JSONAPISerializer('prodes-loss', {
     keyForAttribute: 'camelCase'
 });
 
-var prodesLatestSerializerV2 = new JSONAPISerializer('prodes-latest', {
+const prodesLatestSerializerV2 = new JSONAPISerializer('prodes-latest', {
     attributes: ['latest'],
-    typeForAttribute: function(attribute, record) {
+    typeForAttribute(attribute) {
         return attribute;
     }
 });
@@ -26,9 +23,11 @@ class ProdesLossSerializerV2 {
     static serialize(data) {
         return prodesLossSerializerV2.serialize(data);
     }
+
     static serializeLatest(data) {
         return prodesLatestSerializerV2.serialize(data);
     }
+
 }
 
 module.exports = ProdesLossSerializerV2;
