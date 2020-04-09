@@ -1,34 +1,34 @@
-'use strict';
-
-var Router = require('koa-router');
-var logger = require('logger');
-var CartoDBService = require('services/cartoDBService');
-var NotFound = require('errors/notFound');
-var ProdesLossSerializer = require('serializers/prodesLossSerializer');
+const Router = require('koa-router');
+const logger = require('logger');
+const CartoDBService = require('services/cartoDBService');
+const NotFound = require('errors/notFound');
+const ProdesLossSerializer = require('serializers/prodesLossSerializer');
 
 
-var router = new Router({
+const router = new Router({
     prefix: '/prodes-loss'
 });
 
 class ProdesLossRouter {
-    static * getNational() {
+
+    static* getNational() {
         logger.info('Obtaining national data');
-        let data = yield CartoDBService.getNational(this.params.iso, this.query.alertQuery, this.query.period);
+        const data = yield CartoDBService.getNational(this.params.iso, this.query.alertQuery, this.query.period);
 
         this.body = ProdesLossSerializer.serialize(data);
     }
 
-    static * getSubnational() {
+    static* getSubnational() {
         logger.info('Obtaining subnational data');
-        let data = yield CartoDBService.getSubnational(this.params.iso, this.params.id1, this.query.alertQuery, this.query.period);
+        const data = yield CartoDBService.getSubnational(this.params.iso, this.params.id1, this.query.alertQuery, this.query.period);
         this.body = ProdesLossSerializer.serialize(data);
     }
 
-    static * use() {
+    static* use() {
         logger.info('Obtaining use data with name %s and id %s', this.params.name, this.params.id);
         let useTable = null;
         switch (this.params.name) {
+
             case 'mining':
                 useTable = 'gfw_mining';
                 break;
@@ -43,26 +43,27 @@ class ProdesLossRouter {
                 break;
             default:
                 useTable = this.params.name;
+
         }
         if (!useTable) {
             this.throw(404, 'Name not found');
         }
-        let data = yield CartoDBService.getUse(this.params.name, useTable, this.params.id, this.query.alertQuery, this.query.period);
+        const data = yield CartoDBService.getUse(this.params.name, useTable, this.params.id, this.query.alertQuery, this.query.period);
         this.body = ProdesLossSerializer.serialize(data);
 
     }
 
-    static * wdpa() {
+    static* wdpa() {
         logger.info('Obtaining wpda data with id %s', this.params.id);
-        let data = yield CartoDBService.getWdpa(this.params.id, this.query.alertQuery, this.query.period);
+        const data = yield CartoDBService.getWdpa(this.params.id, this.query.alertQuery, this.query.period);
         this.body = ProdesLossSerializer.serialize(data);
     }
 
-    static * world() {
+    static* world() {
         logger.info('Obtaining world data');
         this.assert(this.query.geostore, 400, 'GeoJSON param required');
         try {
-            let data = yield CartoDBService.getWorld(this.query.geostore, this.query.alertQuery, this.query.period);
+            const data = yield CartoDBService.getWorld(this.query.geostore, this.query.alertQuery, this.query.period);
 
             this.body = ProdesLossSerializer.serialize(data);
         } catch (err) {
@@ -76,7 +77,7 @@ class ProdesLossRouter {
     }
 
     static checkGeojson(geojson) {
-        if (geojson.type.toLowerCase() === 'polygon'){
+        if (geojson.type.toLowerCase() === 'polygon') {
             return {
                 type: 'FeatureCollection',
                 features: [{
@@ -84,24 +85,25 @@ class ProdesLossRouter {
                     geometry: geojson
                 }]
             };
-        } else if (geojson.type.toLowerCase() === 'feature') {
+        }
+        if (geojson.type.toLowerCase() === 'feature') {
             return {
                 type: 'FeatureCollection',
                 features: [geojson]
             };
-        } 
+        }
         return geojson;
     }
 
-    static * worldWithGeojson() {
+    static* worldWithGeojson() {
         logger.info('Obtaining world data with geostore');
         this.assert(this.request.body.geojson, 400, 'GeoJSON param required');
-        try{            
-            let data = yield CartoDBService.getWorldWithGeojson(ProdesLossRouter.checkGeojson(this.request.body.geojson), this.query.alertQuery, this.query.period);
+        try {
+            const data = yield CartoDBService.getWorldWithGeojson(ProdesLossRouter.checkGeojson(this.request.body.geojson), this.query.alertQuery, this.query.period);
 
             this.body = ProdesLossSerializer.serialize(data);
-        } catch(err){
-            if(err instanceof NotFound){
+        } catch (err) {
+            if (err instanceof NotFound) {
                 this.throw(404, 'Geostore not found');
                 return;
             }
@@ -110,21 +112,20 @@ class ProdesLossRouter {
 
     }
 
-    static * latest() {
+    static* latest() {
         logger.info('Obtaining latest data');
-        let data = yield CartoDBService.latest(this.query.limit);
+        const data = yield CartoDBService.latest(this.query.limit);
         this.body = ProdesLossSerializer.serializeLatest(data);
     }
 
 }
 
-var isCached = function*(next) {
+const isCached = function* isCached(next) {
     if (yield this.cashed()) {
         return;
     }
     yield next;
 };
-
 
 
 router.get('/admin/:iso', isCached, ProdesLossRouter.getNational);
