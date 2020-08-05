@@ -21,7 +21,8 @@ class ProdesLossRouter {
                 this.body = { errors: ['SQL query timeout error. Refactor your query and try running again.'] };
                 this.status = 429;
             } else {
-                this.body = {};
+                this.body = { errors: err };
+                this.status = 500;
             }
         }
     }
