@@ -420,21 +420,23 @@ const mockGeostoreRequest = (path) => {
 };
 
 const mockTimeoutCartoDBRequest = () => {
-    const base = config.get('cartoDB.apiUrl').replace('/api/v2/sql', '');
-
-    nock(base).get('/api/v2/sql').query(() => true).reply(429, {
-        error: ['You are over platform\'s limits: SQL query timeout error. Refactor your query before running again or contact CARTO support for more details.'],
-        context: 'limit',
-        detail: 'datasource'
-    });
+    nock(`https://${config.get('cartoDB.user')}.cartodb.com`)
+        .get('/api/v2/sql')
+        .query(() => true)
+        .reply(429, {
+            error: ['You are over platform\'s limits: SQL query timeout error. Refactor your query before running again or contact CARTO support for more details.'],
+            context: 'limit',
+            detail: 'datasource'
+        });
 };
 
 const mockErrorCartoDBRequest = () => {
-    const base = config.get('cartoDB.apiUrl').replace('/api/v2/sql', '');
-
-    nock(base).get('/api/v2/sql').query(() => true).reply(500, {
-        error: ['An error has occurred.'],
-    });
+    nock(`https://${config.get('cartoDB.user')}.cartodb.com`)
+        .get('/api/v2/sql')
+        .query(() => true)
+        .reply(500, {
+            error: ['An error has occurred.'],
+        });
 };
 
 module.exports = {
