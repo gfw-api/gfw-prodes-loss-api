@@ -1,6 +1,7 @@
 {
   "cartoDB": {
-    "user": "CARTODB_USER"
+    "user": "CARTODB_USER",
+    "apiUrl": "CARTODB_API_URL"
   },
   "logger": {
     "level": "LOGGER_LEVEL"

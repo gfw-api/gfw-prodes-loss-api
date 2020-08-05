@@ -1,3 +1,4 @@
+const config = require('config');
 const nock = require('nock');
 
 const mockGeostoreRequest = (path) => {
@@ -419,8 +420,9 @@ const mockGeostoreRequest = (path) => {
 };
 
 const mockTimeoutCartoDBRequest = () => {
-    nock('https://hello.cartodb.com')
-        .get('/api/v2/sql')
+    const base = config.get('cartoDB.apiUrl').replace('/api/v2/sql', '');
+
+    nock(base).get('/api/v2/sql')
         .query(() => true)
         .reply(429, {
             error: ['You are over platform\'s limits: SQL query timeout error. Refactor your query before running again or contact CARTO support for more details.'],
