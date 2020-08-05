@@ -13,9 +13,17 @@ class ProdesLossRouter {
 
     static* getNational() {
         logger.info('Obtaining national data');
-        const data = yield CartoDBService.getNational(this.params.iso, this.query.alertQuery, this.query.period);
-
-        this.body = ProdesLossSerializer.serialize(data);
+        try {
+            const data = yield CartoDBService.getNational(this.params.iso, this.query.alertQuery, this.query.period);
+            this.body = ProdesLossSerializer.serialize(data);
+        } catch (err) {
+            if (Array.isArray(err) && err.includes('You are over platform\'s limits: SQL query timeout error. Refactor your query before running again or contact CARTO support for more details.')) {
+                this.body = { errors: ['SQL query timeout error. Refactor your query and try running again.'] };
+                this.status = 504;
+            } else {
+                this.body = {};
+            }
+        }
     }
 
     static* getSubnational() {
