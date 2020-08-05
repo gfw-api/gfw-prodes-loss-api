@@ -19,7 +19,7 @@ class ProdesLossRouter {
         } catch (err) {
             if (Array.isArray(err) && err.includes('You are over platform\'s limits: SQL query timeout error. Refactor your query before running again or contact CARTO support for more details.')) {
                 this.body = { errors: ['SQL query timeout error. Refactor your query and try running again.'] };
-                this.status = 504;
+                this.status = 429;
             } else {
                 this.body = {};
             }

@@ -19,12 +19,12 @@ describe('CartoDB timeout handling', () => {
         requester = await getTestServer();
     });
 
-    it('GFW Prodes handles CartoDB timeouts graciously, returning 504 with an appropriate error message', async () => {
+    it('GFW Prodes handles CartoDB timeouts graciously, returning 429 with an appropriate error message', async () => {
         mockGeostoreRequest('/v1/geostore/admin/BRA');
         mockTimeoutCartoDBRequest();
 
         const response = await requester.get('/api/v1/prodes-loss/admin/BRA?period=2001-01-01%2C2020-12-31&thresh=30');
-        response.status.should.equal(504);
+        response.status.should.equal(429);
         response.body.should.be.an('object').and.have.property('errors');
         response.body.errors.should.be.an('array').and.have.length(1);
         response.body.errors[0].should.equal('SQL query timeout error. Refactor your query and try running again.');
