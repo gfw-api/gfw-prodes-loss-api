@@ -4,5 +4,9 @@
     "level": "debug",
     "toFile": false,
     "dirLogFile": null
+  },
+  "cartoDB": {
+    "user": "hello",
+    "apiUrl": "https://hello.cartodb.com/api/v2/sql"
   }
 }
