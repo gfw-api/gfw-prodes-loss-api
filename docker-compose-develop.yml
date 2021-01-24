@@ -14,6 +14,7 @@ services:
       LOCAL_URL: http://mymachine:3600
       API_VERSION: v1
       CT_REGISTER_MODE: auto
+      FASTLY_ENABLED: "false"
     command: develop
     volumes:
       - ./app:/opt/gfw-prodes-loss-api/app
