@@ -1,6 +1,6 @@
 # GFW Prodes Loss API
 
-[![Build Status](https://travis-ci.org/gfw-api/gfw-prodes-loss-api.svg?branch=develop)](https://travis-ci.org/gfw-api/gfw-prodes-loss-api)
+[![Build Status](https://travis-ci.com/gfw-api/gfw-prodes-loss-api.svg?branch=dev)](https://travis-ci.com/gfw-api/gfw-prodes-loss-api)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/e683fe0cb0dc0b7cab57/test_coverage)](https://codeclimate.com/github/gfw-api/gfw-prodes-loss-api/test_coverage)
 
 This repository is the microservice that it implement the prodes loss funcionality and exposed the /prodes-loss endpoints in the api-gateway
