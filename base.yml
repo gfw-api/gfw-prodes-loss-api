@@ -1,8 +1,8 @@
 base:
   build: .
   ports:
-    - "3600:3600"
+    - "3602:3602"
   environment:
-    PORT: 3600
+    PORT: 3602
     NODE_PATH: app/src
   container_name: gfw-prodes-loss-api
