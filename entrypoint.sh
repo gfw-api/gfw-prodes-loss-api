@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+export NODE_EXTRA_CA_CERTS='./certs/SectigoRSADomainValidationSecureServerCA.crt'
+
 case "$1" in
     develop)
         echo "Running Development Server"
