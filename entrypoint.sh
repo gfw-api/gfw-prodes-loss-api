@@ -4,15 +4,11 @@ set -e
 case "$1" in
     develop)
         echo "Running Development Server"
-        exec grunt --gruntfile app/Gruntfile.js | bunyan
-        ;;
-    startDev)
-        echo "Running Start Dev"
-        exec yarn start
+        exec yarn run start
         ;;
     test)
         echo "Running Test"
-        exec grunt --gruntfile app/Gruntfile.js test
+        exec yarn test
         ;;
     start)
         echo "Running Start"

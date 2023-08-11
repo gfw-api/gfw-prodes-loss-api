@@ -6,7 +6,7 @@
     "dirLogFile": null
   },
   "service": {
-    "id": "gfw-prodes-loss-api_1.0.0",
+    "id": "gfw-prodes-loss-api",
     "name": "GFW Prodes Loss API",
     "port": 3600
   },

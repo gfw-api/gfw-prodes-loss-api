@@ -5,5 +5,8 @@
   },
   "logger": {
     "level": "LOGGER_LEVEL"
+  },
+  "service": {
+    "port": "PORT"
   }
 }
