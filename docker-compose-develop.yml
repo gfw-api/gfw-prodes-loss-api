@@ -10,11 +10,12 @@ services:
       NODE_PATH: app/src
       NODE_ENV: dev
       CARTODB_USER: wri-01
-      CT_URL: http://mymachine:9000
+      GATEWAY_URL: http://mymachine:9000
       LOCAL_URL: http://mymachine:3600
-      API_VERSION: v1
-      CT_REGISTER_MODE: auto
       FASTLY_ENABLED: "false"
+      AWS_REGION: "us-east-1"
+      AWS_ACCESS_KEY_ID: "test"
+      AWS_SECRET_ACCESS_KEY: "test"
     command: develop
     volumes:
       - ./app:/opt/gfw-prodes-loss-api/app
